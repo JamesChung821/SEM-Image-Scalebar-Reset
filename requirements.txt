@@ -1,0 +1,7 @@
+PIL
+pytesseract
+opencv-python
+matplotlib
+pathlib
+streamlit
+io
