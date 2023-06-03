@@ -5,3 +5,5 @@ matplotlib
 pathlib
 streamlit
 matplotlib_scalebar
+tesseract-ocr
+tesseract-ocr-por
