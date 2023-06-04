@@ -1,6 +1,7 @@
 from PIL import Image
 import cv2
 import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r"D:\Software\Anaconda3\envs\python31010\Lib\site-packages\pytesseract\tesseract.exe"
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cbook as cbook
