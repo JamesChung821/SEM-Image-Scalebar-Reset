@@ -1,5 +1,6 @@
 pillow
 pytesseract
+tesseract
 opencv-python-headless
 matplotlib
 pathlib
