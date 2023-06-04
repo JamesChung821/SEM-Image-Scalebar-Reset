@@ -161,7 +161,7 @@ def streamlit_mode():
         btn = st.download_button(
             label="Download image",
             data=fig,
-            file_name=f'{uploaded_file.name}_scalebar.png',
+            file_name=f'{uploaded_file.name[:-4]}_scalebar.png',
             mime="image/png"
         )
 
