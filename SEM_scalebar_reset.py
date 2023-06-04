@@ -115,7 +115,7 @@ def streamlit_mode():
                 print(black_row_index)
                 break
 
-        pytesseract.pytesseract.tesseract_cmd = r"D:\Software\Anaconda3\envs\python31010\Lib\site-packages\pytesseract\tesseract.exe"
+        pytesseract.pytesseract.tesseract_cmd = r".\tesseract.exe"
         text = pytesseract.image_to_string(
             img[black_row_index-10:]).replace('\n', ' ')    # Extract the text from the image at the bottom info bar
         print(f'Text: {text}')
