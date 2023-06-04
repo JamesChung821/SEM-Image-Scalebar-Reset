@@ -1,7 +1,6 @@
 from PIL import Image
 import cv2
 import pytesseract
-# pytesseract.pytesseract.tesseract_cmd = r"D:\Software\Anaconda3\envs\python31010\Lib\site-packages\pytesseract\tesseract.exe"
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cbook as cbook
@@ -117,7 +116,7 @@ def streamlit_mode():
                 break
 
         text = pytesseract.image_to_string(
-            img[black_row_index-10:]).replace('\n', ' ')    # Extract the text from the image at the bottom info bar
+            img[black_row_index-100:]).replace('\n', ' ')    # Extract the text from the image at the bottom info bar
         print(f'Text: {text}')
 
         magnification_head = 0
