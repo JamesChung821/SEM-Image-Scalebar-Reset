@@ -116,7 +116,7 @@ def streamlit_mode():
                 break
 
         text = pytesseract.image_to_string(
-            img[black_row_index-100:]).replace('\n', ' ')    # Extract the text from the image at the bottom info bar
+            img[black_row_index-100:], config='--psm 6').replace('\n', ' ')    # Extract the text from the image at the bottom info bar
         print(f'Text: {text}')
 
         magnification_head = 0
