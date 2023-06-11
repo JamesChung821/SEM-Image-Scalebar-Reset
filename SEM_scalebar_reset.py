@@ -41,7 +41,15 @@ def streamlit_mode():
         'SEM Manufacturer',
         ('Helios', 'JEOL', 'Hitachi'))  #'Zeiss', 'FEI',
 
-    size_of_one_pixel = st.sidebar.number_input('Pixel size of the image (nm), and 0.00 is the default value')
+    size_of_one_pixel = st.sidebar.number_input('Pixel size of the image (mm), and 0.000000000 is the default value',
+                                                format='%.9f')
+    st.sidebar.caption('Known distance/Distance in pixels')
+
+    length_fraction = st.sidebar.selectbox(
+        'Desired length of the scale bar as a fraction of the subplot\'s width',
+        (0.25, 0.5, 0.75, 1))
+
+    frameon = st.sidebar.checkbox("Show frame around the scalebar")
 
     if uploaded_file is not None:
         original_image = Image.open(uploaded_file)
@@ -57,6 +65,7 @@ def streamlit_mode():
         dpi = original_image.info['dpi'][0]
         x_pixel = original_image.size[0]
         length = x_pixel / dpi * 25.4
+
         print(f'x pixels: {x_pixel}, dpi: {dpi}, length: {length}')
 
         img = np.array(original_image)  # Convert to numpy array because pytesseract only accepts numpy array
@@ -87,27 +96,29 @@ def streamlit_mode():
 
         # Display the scalebar
         scalebar = ScaleBar(length/magnification/x_pixel, 'mm',
-                            length_fraction=0.25,
+                            length_fraction=length_fraction,
                             location='lower right',
                             color='white',
                             box_color='black',
                             border_pad=0.5,
                             sep=5,
+                            frameon=frameon,
                             font_properties={'size': 'small'}) \
             if size_of_one_pixel == 0 \
             else ScaleBar(size_of_one_pixel, 'mm',
-                          length_fraction=0.25,
+                          length_fraction=length_fraction,
                           location='lower right',
                           color='white',
                           box_color='black',
                           border_pad=0.5,
                           sep=5,
+                          frameon=frameon,
                           font_properties={'size': 'small'})
 
         # Display the reset image
         fig, ax = plt.subplots()
         ax.set_axis_off()
-        plt.gca().add_artist(scalebar)
+        plt.gca().add_artist(scalebar)  # gca() stands for 'get current axis'
         plt.imshow(img[:black_row_index], cmap='gray')
         if show_reset_image:
             st.pyplot(fig)
