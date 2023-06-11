@@ -49,7 +49,7 @@ def streamlit_mode():
         'Desired length of the scale bar as a fraction of the subplot\'s width',
         (0.25, 0.5, 0.75, 1))
 
-    frameon = st.sidebar.checkbox("Show frame around the scalebar")
+    hide_frameon = not st.sidebar.checkbox("Hide frame around the scalebar")
 
     if uploaded_file is not None:
         original_image = Image.open(uploaded_file)
@@ -102,7 +102,7 @@ def streamlit_mode():
                             box_color='black',
                             border_pad=0.5,
                             sep=5,
-                            frameon=frameon,
+                            frameon=hide_frameon,
                             font_properties={'size': 'small'}) \
             if size_of_one_pixel == 0 \
             else ScaleBar(size_of_one_pixel, 'mm',
@@ -112,13 +112,12 @@ def streamlit_mode():
                           box_color='black',
                           border_pad=0.5,
                           sep=5,
-                          frameon=frameon,
+                          frameon=hide_frameon,
                           font_properties={'size': 'small'})
 
         # Display the reset image
         fig, ax = plt.subplots()
         ax.set_axis_off()
-        # ax.axis('off')
 
         plt.gca().add_artist(scalebar)  # gca() stands for 'get current axis'
         plt.imshow(img[:black_row_index], cmap='gray')
