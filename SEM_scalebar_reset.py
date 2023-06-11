@@ -63,10 +63,10 @@ def streamlit_mode():
 
         black_row_index = img.shape[0]  # Initialize the black row index
 
-        print(img[960, :])
+        print(img[black_row_index-10, :])
 
         for index, black_row in enumerate(img):     # Find the first black row or white row to crop the image
-            if black_row[:50].mean() == 255 or black_row[:50].mean() == 46 or black_row[:50].mean() == 257:
+            if black_row[:5].mean() == 11822 or black_row[:50].mean() == 255 or black_row[:50].mean() == 46 or black_row[:50].mean() == 257:
                 black_row_index = index
                 print(black_row)
                 print(black_row_index)
