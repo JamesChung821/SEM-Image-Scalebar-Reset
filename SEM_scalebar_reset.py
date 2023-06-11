@@ -118,6 +118,8 @@ def streamlit_mode():
         # Display the reset image
         fig, ax = plt.subplots()
         ax.set_axis_off()
+        # ax.axis('off')
+
         plt.gca().add_artist(scalebar)  # gca() stands for 'get current axis'
         plt.imshow(img[:black_row_index], cmap='gray')
         if show_reset_image:
