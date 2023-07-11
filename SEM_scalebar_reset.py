@@ -10,13 +10,18 @@ from pathlib import Path
 import streamlit as st
 # https://docs.streamlit.io/en/stable/api.html#display-interactive-widgets
 import io
+import time
 
 MODE = 'streamlit'  # 'streamlit' or 'local'
-# INPUT_PATH = r"D:\Research data\SSID\202303\20230313 FIB-SEM b34 SP"
-INPUT_PATH = r"D:\Research data\SSID\202305\20230524 G5 NbAlSc EDX"
+INPUT_PATH = r"D:\Research data\SSID\202303\20230313 FIB-SEM b34 SP"
+# INPUT_PATH = r"D:\Research data\SSID\202305\20230524 G5 NbAlSc EDX"
 OUTPUT_PATH = Path(f'{INPUT_PATH}\Output_files')
 if not OUTPUT_PATH.exists():
-    OUTPUT_PATH.mkdir()    # Create an output folder to save all generated data/files
+    OUTPUT_PATH.mkdir()  # Create an output folder to save all generated data/files
+SEM_MANUFACTURER = 'Helios'  # 'Helios', 'JEOL', 'Hitachi'
+LENGTH_FRACTION = 0.25  # 0.25, 0.5, 0.75, 1.0 Desired length of the scale bar in fraction of the image width
+SIZE_OF_ONE_PIXEL = 0.000000000  # 0.000000000 is the default value
+SHOW_FRAMEON = True  # True or False
 
 
 def main():
@@ -28,6 +33,7 @@ def main():
 
 def streamlit_mode():
     st.title('SEM Image Scalebar Reset')
+    st.info('Confirm SEM Manufacturer', icon="ℹ️")
     st.write("Upload an image file and see it displayed below:")
     st.sidebar.title('User Preference')
 
@@ -39,7 +45,7 @@ def streamlit_mode():
 
     sem_manufacturer = st.sidebar.selectbox(
         'SEM Manufacturer',
-        ('Helios', 'JEOL', 'Hitachi'))  #'Zeiss', 'FEI',
+        ('Helios', 'JEOL', 'Hitachi'))  # 'Zeiss', 'FEI',
 
     size_of_one_pixel = st.sidebar.number_input('Pixel size of the image (mm), and 0.000000000 is the default value',
                                                 format='%.9f')
@@ -73,29 +79,31 @@ def streamlit_mode():
 
         black_row_index = img.shape[0]  # Initialize the black row index
 
-        print(img[black_row_index-10, :])   # Check the last 10 rows (pixels) of the image
-
-        for index, black_row in enumerate(img):     # Find the first black row or white row to crop the image
+        print(img[black_row_index - 10, :])  # Check the last 10 rows (pixels) of the image
+        # Because the bar info is at the bottom of the image,
+        # we find the first row of bar info from index = -150 to the end to crop the image
+        for index, black_row in enumerate(img[-150:]):
             if black_row[1:5].mean() == 11822 \
                     or black_row[1:50].mean() == 255 \
                     or black_row[1:50].mean() == 46 \
                     or black_row[1:50].mean() == 257 \
                     or black_row[1:50].mean() == 0:
-                black_row_index = index
-                print(black_row)
+                # The real black row index is the index of the black row plus the index of the last 150 rows
+                black_row_index = index + img.shape[0] - 150
                 print('black row index', black_row_index)
+                print(f'black row: {black_row}')
                 break
 
         # Crop the image and extract the text from the image at the bottom info bar
         text = pytesseract.image_to_string(
-            img[black_row_index-100:], config='--psm 6').replace('\n', ' ')
+            img[black_row_index - 100:], config='--psm 6').replace('\n', ' ')
         print(f'Text: {text}')
 
         # Search the magnification from the text
         magnification = search_magnification(sem_manufacturer, text)
 
         # Display the scalebar
-        scalebar = ScaleBar(length/magnification/x_pixel, 'mm',
+        scalebar = ScaleBar(length / magnification / x_pixel, 'mm',
                             length_fraction=length_fraction,
                             location='lower right',
                             color='white',
@@ -142,51 +150,67 @@ def local_mode():
     for index, file_directory in enumerate(files):
         file = file_directory.resolve()  # Make the path absolute, resolving any symlinks
         filename = file.name
+        print('='*50)
         print(index, filename)
+        print('-'*50)
 
-        if '.tif' in filename and index == 0:
+        if '.tif' in filename and index == 9 or index == 14 or index == 15:
             original_image = Image.open(INPUT_PATH + '/' + filename)
+
+            # Display the image info
             dpi = original_image.info['dpi'][0]
             x_pixel = original_image.size[0]
             length = x_pixel / dpi * 25.4
-            print(x_pixel, dpi, length)
+            print(f'x pixels: {x_pixel}, dpi: {dpi}, length: {length}')
 
-            img = np.array(original_image)  # Convert to numpy array
+            img = np.array(original_image)  # Convert to numpy array because pytesseract only accepts numpy array
             print(img.shape)
 
             black_row_index = img.shape[0]  # Initialize the black row index
-            for index, black_row in enumerate(img):     # Find the first black row or white row to crop the image
-                if black_row[:5].mean() == 11822 or black_row[:5].mean() == 255:
-                    black_row_index = index
-                    print(black_row_index)
+            # Because the bar info is at the bottom of the image,
+            # we find the first row of bar info from index = -150 to the end to crop the image
+            for index, black_row in enumerate(img[-150:]):
+                if black_row[1:5].mean() == 11822 \
+                        or black_row[1:50].mean() == 255 \
+                        or black_row[1:50].mean() == 46 \
+                        or black_row[1:50].mean() == 257 \
+                        or black_row[1:50].mean() == 0:
+                    # The real black row index is the index of the black row plus the index of the last 150 rows
+                    black_row_index = index + img.shape[0] - 150
+                    print(f'black row index: {black_row_index}')
+                    print(f'black row: {black_row}')
                     break
 
-            text = pytesseract.image_to_string(img)
-            print(text)
+            text = pytesseract.image_to_string(img[black_row_index - 100:], config='--psm 6').replace('\n', ' ')
+            print(f'Text: {text}')
 
-            magnification_head = 0
-            magnification_tail = text.find('x')-1
-            for index in range(magnification_tail, 0, -1):  # Find the magnification head
-                if not text[index].isdigit() and text[index] != ' ':
-                    magnification_head = index+1
-                    break
+            # Search the magnification from the text
+            magnification = search_magnification(SEM_MANUFACTURER, text)
 
-            magnification = int(text[magnification_head:magnification_tail+1])
-            print(magnification)
-
-            scalebar = ScaleBar(length/magnification/x_pixel, 'mm',
-                                length_fraction=0.25,
+            scalebar = ScaleBar(length / magnification / x_pixel, 'mm',
+                                length_fraction=LENGTH_FRACTION,
                                 location='lower right',
                                 color='white',
                                 box_color='black',
                                 border_pad=0.5,
                                 sep=5,
-                                font_properties={'size': 'small'})
+                                frameon=SHOW_FRAMEON,
+                                font_properties={'size': 'small'}) \
+                if SIZE_OF_ONE_PIXEL == 0 \
+                else ScaleBar(SIZE_OF_ONE_PIXEL, 'mm',
+                              length_fraction=LENGTH_FRACTION,
+                              location='lower right',
+                              color='white',
+                              box_color='black',
+                              border_pad=0.5,
+                              sep=5,
+                              frameon=SHOW_FRAMEON,
+                              font_properties={'size': 'small'})
             plt.xticks([])
             plt.yticks([])
             plt.gca().add_artist(scalebar)
             plt.imshow(img[:black_row_index], cmap='gray')
-            plt.savefig("{}/{}.png".format(OUTPUT_PATH, f'reset_{filename[:-4]}'),
+            plt.savefig("{}/{}.png".format(OUTPUT_PATH, f'{filename[:-4]}_scalebar'),
                         dpi=600, bbox_inches='tight', pad_inches=0)
             plt.show()
             plt.close()
@@ -201,37 +225,39 @@ def search_magnification(sem_manufacturer, text):
     """
     if sem_manufacturer == 'Helios':
         magnification_head = 0
-        magnification_tail = text.find('x')-1
+        magnification_tail = text.find('x') - 1
         for index in range(magnification_tail, 0, -1):  # Find the magnification head
             if not text[index].isdigit() and text[index] != ' ':
-                magnification_head = index+1
+                magnification_head = index + 1
                 break
-        print(magnification_head, magnification_tail)
+        print(f'magnification_head: {magnification_head}, magnification_tail: {magnification_tail}')
 
-        magnification = int(text[magnification_head:magnification_tail+1].replace(' ', ''))  # Extract the magnification
-        print(magnification)
+        magnification = int(
+            text[magnification_head:magnification_tail + 1].replace(' ', ''))  # Extract the magnification
+        print(f'magnification: {magnification}')
         return magnification
 
     elif sem_manufacturer == 'JEOL':
         magnification_head = text.find('X') if text.find('X') != -1 else text.find('x')
-        magnification_tail = text.find(' ', magnification_head+2)
-        print(magnification_head, magnification_tail)
+        magnification_tail = text.find(' ', magnification_head + 2)
+        print(f'magnification_head: {magnification_head}, magnification_tail: {magnification_tail}')
 
-        magnification = int(text[magnification_head+1:magnification_tail].replace(' ', '').replace(',', ''))  # Extract the magnification
-        print(magnification)
+        magnification = int(text[magnification_head + 1:magnification_tail].replace(' ', '').replace(',',
+                                                                                                     ''))  # Extract the magnification
+        print(f'magnification: {magnification}')
         return magnification
 
     elif sem_manufacturer == 'Hitachi':
         magnification_head = text.find('x')
-        magnification_tail = text.find(' ', magnification_head+2)
-        print(magnification_head, magnification_tail)
+        magnification_tail = text.find(' ', magnification_head + 2)
+        print(f'magnification_head: {magnification_head}, magnification_tail: {magnification_tail}')
 
-        magnification = text[magnification_head+1:magnification_tail].replace(' ', '')  # Extract the magnification
+        magnification = text[magnification_head + 1:magnification_tail].replace(' ', '')  # Extract the magnification
         if 'k' in magnification:
             magnification = int(float(magnification[:-1]) * 1000)
         else:
             magnification = int(magnification)
-        print(magnification)
+        print(f'magnification: {magnification}')
         return magnification
 
 
