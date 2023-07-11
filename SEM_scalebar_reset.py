@@ -136,7 +136,7 @@ def streamlit_mode():
         fig = io.BytesIO()  # Create a new in-memory file object for the plot
         plt.savefig(fig, format='png', dpi=600, bbox_inches='tight', pad_inches=0)
         btn = st.download_button(
-            label="Download image",
+            label="Download image with 600 dpi",
             data=fig,
             file_name=f'{uploaded_file.name[:-4]}_scalebar.png',
             mime="image/png"
@@ -154,7 +154,7 @@ def local_mode():
         print(index, filename)
         print('-'*50)
 
-        if '.tif' in filename and index == 9 or index == 14 or index == 15:
+        if '.tif' in filename:
             original_image = Image.open(INPUT_PATH + '/' + filename)
 
             # Display the image info
