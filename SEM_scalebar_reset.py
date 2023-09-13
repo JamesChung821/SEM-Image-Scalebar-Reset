@@ -47,7 +47,7 @@ def streamlit_mode():
         'SEM Manufacturer',
         ('Helios', 'JEOL', 'Hitachi'))  # 'Zeiss', 'FEI',
 
-    size_of_one_pixel = st.sidebar.number_input('Pixel size of the image (mm), and 0.00 is the default value',
+    size_of_one_pixel = st.sidebar.number_input('Pixel size of the image (nm/pixel), and 0.00 is the default value',
                                                 format='%.2f')
     st.sidebar.caption('Known distance/Distance in pixels')
 
