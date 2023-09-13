@@ -20,7 +20,7 @@ if not OUTPUT_PATH.exists():
     OUTPUT_PATH.mkdir()  # Create an output folder to save all generated data/files
 SEM_MANUFACTURER = 'Helios'  # 'Helios', 'JEOL', 'Hitachi'
 LENGTH_FRACTION = 0.25  # 0.25, 0.5, 0.75, 1.0 Desired length of the scale bar in fraction of the image width
-SIZE_OF_ONE_PIXEL = 0.000000000  # 0.000000000 is the default value
+SIZE_OF_ONE_PIXEL = 0.00  # 0.00 is the default value
 SHOW_FRAMEON = True  # True or False
 
 
@@ -47,8 +47,8 @@ def streamlit_mode():
         'SEM Manufacturer',
         ('Helios', 'JEOL', 'Hitachi'))  # 'Zeiss', 'FEI',
 
-    size_of_one_pixel = st.sidebar.number_input('Pixel size of the image (mm), and 0.000000000 is the default value',
-                                                format='%.9f')
+    size_of_one_pixel = st.sidebar.number_input('Pixel size of the image (mm), and 0.00 is the default value',
+                                                format='%.2f')
     st.sidebar.caption('Known distance/Distance in pixels')
 
     length_fraction = st.sidebar.selectbox(
@@ -113,7 +113,7 @@ def streamlit_mode():
                             frameon=hide_frameon,
                             font_properties={'size': 'small'}) \
             if size_of_one_pixel == 0 \
-            else ScaleBar(size_of_one_pixel, 'mm',
+            else ScaleBar(size_of_one_pixel, 'nm',
                           length_fraction=length_fraction,
                           location='lower right',
                           color='white',
@@ -197,7 +197,7 @@ def local_mode():
                                 frameon=SHOW_FRAMEON,
                                 font_properties={'size': 'small'}) \
                 if SIZE_OF_ONE_PIXEL == 0 \
-                else ScaleBar(SIZE_OF_ONE_PIXEL, 'mm',
+                else ScaleBar(SIZE_OF_ONE_PIXEL, 'nm',
                               length_fraction=LENGTH_FRACTION,
                               location='lower right',
                               color='white',

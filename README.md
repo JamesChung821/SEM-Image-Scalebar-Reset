@@ -8,15 +8,15 @@ This program assists in cropping the bottom information bar of the SEM image and
 
 ### 1. Define the user input
 ### 2. Upload the SEM image
-### 3. Update the pixel size in mm if needed
+### 3. Update the pixel size in nm if needed
 
 <p align="center">
   <img src="./pixel_size.png" alt="Size Limit CLI" width="300">
 </p>
 
-Known distance in mm / Distance in pixels = Pixel size (mm/pixel)
+Known distance in nm / Distance in pixels = Pixel size (nm/pixel)
 
-e.g. 0.004 mm / 711 pixels = 5.62e-6 mm/pixel, and then set the pixel size to 0.00000562
+e.g. 4000 nm (4 um) / 711 pixels = 5.626 nm/pixel, and then set the pixel size to 5.63
 
 ### 4. Download the cropped image with a new scale bar
 
