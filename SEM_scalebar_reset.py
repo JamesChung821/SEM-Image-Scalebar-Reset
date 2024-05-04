@@ -22,6 +22,7 @@ SEM_MANUFACTURER = 'Helios'  # 'Helios', 'JEOL', 'Hitachi'
 LENGTH_FRACTION = 0.25  # 0.25, 0.5, 0.75, 1.0 Desired length of the scale bar in fraction of the image width
 SIZE_OF_ONE_PIXEL = 0.00  # 0.00 is the default value
 SHOW_FRAMEON = True  # True or False
+SCALEBAR_LOCATION = 'lower right'  # 'lower right', 'lower left', 'upper right', 'upper left'
 
 
 def main():
@@ -56,6 +57,10 @@ def streamlit_mode():
         (0.25, 0.5, 0.75, 1))
 
     hide_frameon = not st.sidebar.checkbox("Hide frame around the scalebar")
+
+    scalebar_location = st.sidebar.selectbox(
+        'Scalebar Location',
+        ('lower right', 'lower left', 'upper right', 'upper left'))
 
     if uploaded_file is not None:
         original_image = Image.open(uploaded_file)
@@ -105,7 +110,7 @@ def streamlit_mode():
         # Display the scalebar
         scalebar = ScaleBar(length / magnification / x_pixel, 'mm',
                             length_fraction=length_fraction,
-                            location='lower right',
+                            location=scalebar_location,
                             color='white',
                             box_color='black',
                             border_pad=0.5,
@@ -115,7 +120,7 @@ def streamlit_mode():
             if size_of_one_pixel == 0 \
             else ScaleBar(size_of_one_pixel, 'nm',
                           length_fraction=length_fraction,
-                          location='lower right',
+                          location=scalebar_location,
                           color='white',
                           box_color='black',
                           border_pad=0.5,
@@ -189,7 +194,7 @@ def local_mode():
 
             scalebar = ScaleBar(length / magnification / x_pixel, 'mm',
                                 length_fraction=LENGTH_FRACTION,
-                                location='lower right',
+                                location=SCALEBAR_LOCATION,
                                 color='white',
                                 box_color='black',
                                 border_pad=0.5,
@@ -199,7 +204,7 @@ def local_mode():
                 if SIZE_OF_ONE_PIXEL == 0 \
                 else ScaleBar(SIZE_OF_ONE_PIXEL, 'nm',
                               length_fraction=LENGTH_FRACTION,
-                              location='lower right',
+                              location=SCALEBAR_LOCATION,
                               color='white',
                               box_color='black',
                               border_pad=0.5,
