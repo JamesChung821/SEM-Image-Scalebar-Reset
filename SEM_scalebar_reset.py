@@ -106,7 +106,7 @@ def streamlit_mode():
 
         # Crop the image and extract the text from the image at the bottom info bar
         text = pytesseract.image_to_string(
-            img[black_row_index - 100:], config='--psm 6').replace('\n', ' ')
+            img[black_row_index - 100:], config='--psm 11').replace('\n', ' ')
         print(f'Text: {text}')
 
         # Search the magnification from the text
@@ -245,6 +245,7 @@ def search_magnification(sem_manufacturer, text):
 
         magnification = int(
             text[magnification_head:magnification_tail + 1].replace(' ', ''))  # Extract the magnification
+        print(text[magnification_head:magnification_tail + 1].replace(' ', ''))
         print(f'magnification: {magnification}')
         return magnification
 
