@@ -13,7 +13,7 @@ import io
 import time
 
 MODE = 'streamlit'  # 'streamlit' or 'local'
-INPUT_PATH = r"D:\Research data\SSID\202303\20230313 FIB-SEM b34 SP"
+INPUT_PATH = r"C:\Users\user\Downloads\G5 Scalebar update"
 # INPUT_PATH = r"D:\Research data\SSID\202305\20230524 G5 NbAlSc EDX"
 OUTPUT_PATH = Path(f'{INPUT_PATH}\Output_files')
 if not OUTPUT_PATH.exists():
@@ -49,8 +49,12 @@ def streamlit_mode():
         ('Helios', 'JEOL', 'Hitachi'))  # 'Zeiss', 'FEI',
 
     size_of_one_pixel = st.sidebar.number_input('Pixel size of the image (nm/pixel), and 0.00 is the default value',
-                                                format='%.2f')
-    st.sidebar.caption('Known distance/Distance in pixels')
+                                                format='%.3f')
+    if sem_manufacturer == 'Helios':
+        st.sidebar.caption('X100000: 1.35; X150000: 0.91; X200000: 0.34')
+    if sem_manufacturer == 'JEOL':
+        st.sidebar.caption('X10000: 4.65; X20000: 2.325; X50000: 0.92; X100000: 0.465')
+    st.sidebar.caption('Known distance (nm) / Distance in pixels')
 
     length_fraction = st.sidebar.selectbox(
         'Desired length of the scale bar as a fraction of the subplot\'s width',
@@ -92,7 +96,8 @@ def streamlit_mode():
                     or black_row[1:50].mean() == 255 \
                     or black_row[1:50].mean() == 46 \
                     or black_row[1:50].mean() == 257 \
-                    or black_row[1:50].mean() == 0:
+                    or black_row[1:50].mean() == 0 \
+                    or black_row[1:50].mean() == 1:
                 # The real black row index is the index of the black row plus the index of the last 150 rows
                 black_row_index = index + img.shape[0] - 150
                 print('black row index', black_row_index)
@@ -179,7 +184,8 @@ def local_mode():
                         or black_row[1:50].mean() == 255 \
                         or black_row[1:50].mean() == 46 \
                         or black_row[1:50].mean() == 257 \
-                        or black_row[1:50].mean() == 0:
+                        or black_row[1:50].mean() == 0 \
+                        or black_row[1:50].mean() == 1:
                     # The real black row index is the index of the black row plus the index of the last 150 rows
                     black_row_index = index + img.shape[0] - 150
                     print(f'black row index: {black_row_index}')
