@@ -106,7 +106,7 @@ def streamlit_mode():
 
         # Crop the image and extract the text from the image at the bottom info bar
         text = pytesseract.image_to_string(
-            img[black_row_index - 100:], config='--psm 6').replace('\n', ' ')   # --psm 11 may be better
+            img[black_row_index - 500:], config='--psm 6').replace('\n', ' ')   # --psm 11 may be better
         print(f'Text: {text}')
 
         # import easyocr    # Starting with Pillow 10.0.0 (released July 2023), Image.ANTIALIAS was deprecated and removed in favor of Image.Resampling.LANCZOS.
