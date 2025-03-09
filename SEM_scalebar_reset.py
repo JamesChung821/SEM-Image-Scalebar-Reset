@@ -106,8 +106,13 @@ def streamlit_mode():
 
         # Crop the image and extract the text from the image at the bottom info bar
         text = pytesseract.image_to_string(
-            img[black_row_index - 100:], config='--psm 11').replace('\n', ' ')
+            img[black_row_index - 100:], config='--psm 6').replace('\n', ' ')   # --psm 11 may be better
         print(f'Text: {text}')
+
+        # import easyocr    # Starting with Pillow 10.0.0 (released July 2023), Image.ANTIALIAS was deprecated and removed in favor of Image.Resampling.LANCZOS.
+        # reader = easyocr.Reader(['en'])
+        # result = reader.readtext(img[black_row_index - 100:], detail=0)
+        # print(result)
 
         # Search the magnification from the text
         magnification = search_magnification(sem_manufacturer, text)
@@ -245,7 +250,7 @@ def search_magnification(sem_manufacturer, text):
 
         magnification = int(
             text[magnification_head:magnification_tail + 1].replace(' ', ''))  # Extract the magnification
-        print(text[magnification_head:magnification_tail + 1].replace(' ', ''))
+
         print(f'magnification: {magnification}')
         return magnification
 
