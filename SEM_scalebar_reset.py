@@ -16,8 +16,6 @@ MODE = 'streamlit'  # 'streamlit' or 'local'
 INPUT_PATH = r"C:\Users\user\Downloads\G5 Scalebar update"
 # INPUT_PATH = r"D:\Research data\SSID\202305\20230524 G5 NbAlSc EDX"
 OUTPUT_PATH = Path(f'{INPUT_PATH}\Output_files')
-if not OUTPUT_PATH.exists():
-    OUTPUT_PATH.mkdir()  # Create an output folder to save all generated data/files
 SEM_MANUFACTURER = 'Helios'  # 'Helios', 'JEOL', 'Hitachi'
 LENGTH_FRACTION = 0.25  # 0.25, 0.5, 0.75, 1.0 Desired length of the scale bar in fraction of the image width
 SIZE_OF_ONE_PIXEL = 0.00  # 0.00 is the default value
@@ -29,6 +27,8 @@ def main():
     if MODE == 'streamlit':
         streamlit_mode()
     elif MODE == 'local':
+        if not OUTPUT_PATH.exists():
+            OUTPUT_PATH.mkdir()  # Create an output folder to save all generated data/files
         local_mode()
 
 
@@ -249,12 +249,13 @@ def search_magnification(sem_manufacturer, text):
         return magnification
 
     elif sem_manufacturer == 'JEOL':
-        magnification_head = text.find('X') if text.find('X') != -1 else text.find('x')
+        magnification_head = text.find('X') if text.find('X') != -1 \
+            else text.find('x')
         magnification_tail = text.find(' ', magnification_head + 2)
         print(f'magnification_head: {magnification_head}, magnification_tail: {magnification_tail}')
 
-        magnification = int(text[magnification_head + 1:magnification_tail].replace(' ', '').replace(',',
-                                                                                                     ''))  # Extract the magnification
+        magnification = int(text[magnification_head + 1:magnification_tail]
+                            .replace(' ', '').replace(',', ''))  # Extract the magnification
         print(f'magnification: {magnification}')
         return magnification
 
