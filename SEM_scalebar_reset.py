@@ -50,21 +50,18 @@ def streamlit_mode():
 
     size_of_one_pixel = st.sidebar.number_input('Pixel size of the image (nm/pixel), and 0.00 is the default value',
                                                 format='%.3f')
+    st.sidebar.markdown('<div style="margin-top: -15px; font-size: small; color: gray;"> '
+                        'Known distance (nm) / Distance in pixels</div>', unsafe_allow_html=True)
+    # st.sidebar.caption('Known distance (nm) / Distance in pixels')
     if sem_manufacturer == 'Helios':
-        st.sidebar.caption('X100000: 1.35; X150000: 0.91; X200000: 0.34')
+        st.sidebar.markdown('<div style="margin-top: -15px; font-size: small; color: gray;"> '
+                            'X100000: 1.35; X150000: 0.91; X200000: 0.34 </div>', unsafe_allow_html=True)
+        # st.sidebar.caption('X100000: 1.35; X150000: 0.91; X200000: 0.34')
     if sem_manufacturer == 'JEOL':
-        st.sidebar.caption('X10000: 4.65; X20000: 2.325; X50000: 0.92; X100000: 0.465')
-    st.sidebar.caption('Known distance (nm) / Distance in pixels')
+        st.sidebar.markdown('<div style="margin-top: -15px; font-size: small; color: gray;"> '
+                            'X10000: 4.65; X20000: 2.325; X50000: 0.92; X100000: 0.465 </div>', unsafe_allow_html=True)
+        # st.sidebar.caption('X10000: 4.65; X20000: 2.325; X50000: 0.92; X100000: 0.465')
 
-    length_fraction = st.sidebar.selectbox(
-        'Desired length of the scale bar as a fraction of the subplot\'s width',
-        (0.25, 0.5, 0.75, 1))
-
-    hide_frameon = not st.sidebar.checkbox("Hide frame around the scalebar")
-
-    scalebar_location = st.sidebar.selectbox(
-        'Scalebar Location',
-        ('lower right', 'lower left', 'upper right', 'upper left'))
 
     if uploaded_file is not None:
         original_image = Image.open(uploaded_file)
@@ -106,16 +103,27 @@ def streamlit_mode():
 
         # Crop the image and extract the text from the image at the bottom info bar
         text = pytesseract.image_to_string(
-            img[black_row_index - 500:], config='--psm 6').replace('\n', ' ')   # --psm 11 may be better
+            img[black_row_index - 100:], config='--psm 6').replace('\n', ' ')   # --psm 11 may be better
         print(f'Text: {text}')
 
-        # import easyocr    # Starting with Pillow 10.0.0 (released July 2023), Image.ANTIALIAS was deprecated and removed in favor of Image.Resampling.LANCZOS.
-        # reader = easyocr.Reader(['en'])
-        # result = reader.readtext(img[black_row_index - 100:], detail=0)
-        # print(result)
-
         # Search the magnification from the text
-        magnification = search_magnification(sem_manufacturer, text)
+        magnification = 0
+        if SIZE_OF_ONE_PIXEL == 0:
+            try:
+                magnification = search_magnification(sem_manufacturer, text)
+            except ValueError:
+                st.error('''The magnification is not found. Please check the SEM manufacturer or :red[ENTER] a magnification.''')
+                magnification = st.sidebar.number_input('Magnification', format='%f')
+
+        length_fraction = st.sidebar.selectbox(
+            'Desired length of the scale bar as a fraction of the subplot\'s width',
+            (0.25, 0.5, 0.75, 1))
+
+        hide_frameon = not st.sidebar.checkbox("Hide frame around the scalebar")
+
+        scalebar_location = st.sidebar.selectbox(
+            'Scalebar Location',
+            ('lower right', 'lower left', 'upper right', 'upper left'))
 
         # Display the scalebar
         scalebar = ScaleBar(length / magnification / x_pixel, 'mm',
