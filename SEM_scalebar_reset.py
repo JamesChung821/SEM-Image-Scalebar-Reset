@@ -34,12 +34,12 @@ def main():
 
 def streamlit_mode():
     st.title('SEM Image Scalebar Reset')
-    st.info('Confirm SEM Manufacturer', icon="ℹ️")
+    st.info('Confirm the SEM Manufacturer', icon="ℹ️")
     st.write("Upload an image file and see it displayed below:")
     st.sidebar.title('User Preference')
 
     show_original_image = st.sidebar.checkbox("Show original image")
-    show_reset_image = st.sidebar.checkbox("Show reset image")
+    show_reset_image = st.sidebar.checkbox("Show reset image", value=True)
 
     # File upload
     uploaded_file = st.file_uploader("Choose an image file", type=["tif"])  # "jpg", "jpeg", "png", "tif", "tiff"
@@ -107,8 +107,8 @@ def streamlit_mode():
         print(f'Text: {text}')
 
         # Search the magnification from the text
-        magnification = 0
-        if SIZE_OF_ONE_PIXEL == 0:
+        if size_of_one_pixel == 0:
+            magnification = 0
             try:
                 magnification = search_magnification(sem_manufacturer, text)
             except ValueError:
