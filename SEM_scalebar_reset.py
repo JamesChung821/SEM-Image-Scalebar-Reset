@@ -103,7 +103,7 @@ def streamlit_mode():
 
         # Crop the image and extract the text from the image at the bottom info bar
         text = pytesseract.image_to_string(
-            img[black_row_index - 100:], config='--psm 6').replace('\n', ' ')   # --psm 11 may be better
+            img[black_row_index - 150:], config='--psm 6').replace('\n', ' ')   # --psm 11 may be better
         print(f'Text: {text}')
 
         # Search the magnification from the text
@@ -112,8 +112,9 @@ def streamlit_mode():
             try:
                 magnification = search_magnification(sem_manufacturer, text)
             except ValueError:
-                st.error('''The magnification is not found. Please check the SEM manufacturer or :red[ENTER] a magnification.''')
                 magnification = st.sidebar.number_input('Magnification', format='%f')
+                if magnification == 0:
+                    st.error('''The magnification is not found. Please check the SEM manufacturer or :red[ENTER] a magnification.''')
 
         length_fraction = st.sidebar.selectbox(
             'Desired length of the scale bar as a fraction of the subplot\'s width',
