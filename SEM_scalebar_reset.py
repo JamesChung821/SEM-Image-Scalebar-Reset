@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageEnhance
 import cv2
 import pytesseract
 import numpy as np
@@ -18,6 +18,8 @@ INPUT_PATH = r"C:\Users\user\Downloads\G5 Scalebar update"
 OUTPUT_PATH = Path(f'{INPUT_PATH}\Output_files')
 SEM_MANUFACTURER = 'Helios'  # 'Helios', 'JEOL', 'Hitachi'
 LENGTH_FRACTION = 0.25  # 0.25, 0.5, 0.75, 1.0 Desired length of the scale bar in fraction of the image width
+WIDTH_FRACTION = 0.03  # 0.03 is the default value
+FONT_SIZE = 'large'  # 'small', 'medium', 'large', 'x-large', 'xx-large'
 SIZE_OF_ONE_PIXEL = 0.00  # 0.00 is the default value
 SHOW_FRAMEON = True  # True or False
 SCALEBAR_LOCATION = 'lower right'  # 'lower right', 'lower left', 'upper right', 'upper left'
@@ -48,7 +50,7 @@ def streamlit_mode():
         'SEM Manufacturer',
         ('Helios', 'JEOL', 'Hitachi'))  # 'Zeiss', 'FEI',
 
-    size_of_one_pixel = st.sidebar.number_input('Pixel size of the image (nm/pixel), and 0.00 is the default value',
+    size_of_one_pixel = st.sidebar.number_input('Pixel size (nm/pixel), 0.00 is the default value',
                                                 format='%.3f')
     st.sidebar.markdown('<div style="margin-top: -15px; font-size: small; color: gray;"> '
                         'Known distance (nm) / Distance in pixels</div>', unsafe_allow_html=True)
@@ -89,12 +91,13 @@ def streamlit_mode():
         # Because the bar info is at the bottom of the image,
         # we find the first row of bar info from index = -150 to the end to crop the image
         for index, black_row in enumerate(img[-150:]):
-            if black_row[1:5].mean() == 11822 \
-                    or black_row[1:50].mean() == 255 \
-                    or black_row[1:50].mean() == 46 \
-                    or black_row[1:50].mean() == 257 \
-                    or black_row[1:50].mean() == 0 \
-                    or black_row[1:50].mean() == 1:
+            # if black_row[1:5].mean() == 11822 \
+            #         or black_row[1:50].mean() == 255 \
+            #         or black_row[1:50].mean() == 46 \
+            #         or black_row[1:50].mean() == 257 \
+            #         or black_row[1:50].mean() == 0 \
+            #         or black_row[1:50].mean() == 1:
+            if black_row[1:5].mean() == black_row[1].mean():
                 # The real black row index is the index of the black row plus the index of the last 150 rows
                 black_row_index = index + img.shape[0] - 150
                 print('black row index', black_row_index)
@@ -116,36 +119,51 @@ def streamlit_mode():
                 if magnification == 0:
                     st.error('''The magnification is not found. Please check the SEM manufacturer or :red[ENTER] a magnification.''')
 
+        # Adjust the brightness and contrast of the image
+        print(f'original_image.mode: {original_image.mode}')
+        if original_image.mode not in ["RGB", "L"]:
+            original_image = original_image.convert("L")
+        brightness = st.sidebar.slider('Brightness, 1.00 is the default value', 0.0, 2.0, 1.0)
+        original_image = ImageEnhance.Brightness(original_image).enhance(brightness)    # Enhance the brightness of the image
+        contrast = st.sidebar.slider('Contrast, 1.00 is the default value', -10.0, 10.0, 1.0)
+        original_image = ImageEnhance.Contrast(original_image).enhance(contrast)        # Enhance the contrast of the image
+        img = np.array(original_image)                                                  # Convert to numpy array to plot the image
+
+        hide_frameon = not st.sidebar.checkbox("Hide frame around the scalebar")
+
         length_fraction = st.sidebar.selectbox(
             'Desired length of the scale bar as a fraction of the subplot\'s width',
             (0.25, 0.5, 0.75, 1))
-
-        hide_frameon = not st.sidebar.checkbox("Hide frame around the scalebar")
 
         scalebar_location = st.sidebar.selectbox(
             'Scalebar Location',
             ('lower right', 'lower left', 'upper right', 'upper left'))
 
+        width_fraction = st.sidebar.number_input('Scalebar width fraction, 0.03 is the default value', value=0.03)
+        font_size = st.sidebar.selectbox('Font size', ('small', 'medium', 'large', 'x-large', 'xx-large'), index=2)
+
         # Display the scalebar
         scalebar = ScaleBar(length / magnification / x_pixel, 'mm',
                             length_fraction=length_fraction,
+                            width_fraction=width_fraction,
                             location=scalebar_location,
                             color='white',
                             box_color='black',
                             border_pad=0.5,
                             sep=5,
                             frameon=hide_frameon,
-                            font_properties={'size': 'small'}) \
+                            font_properties={'size': font_size}) \
             if size_of_one_pixel == 0 \
             else ScaleBar(size_of_one_pixel, 'nm',
                           length_fraction=length_fraction,
+                          width_fraction=width_fraction,
                           location=scalebar_location,
                           color='white',
                           box_color='black',
                           border_pad=0.5,
                           sep=5,
                           frameon=hide_frameon,
-                          font_properties={'size': 'small'})
+                          font_properties={'size': font_size})    # FontProperties: https://matplotlib.org/stable/api/font_manager_api.html#matplotlib.font_manager.FontProperties
 
         # Display the reset image
         fig, ax = plt.subplots()
@@ -194,12 +212,13 @@ def local_mode():
             # Because the bar info is at the bottom of the image,
             # we find the first row of bar info from index = -150 to the end to crop the image
             for index, black_row in enumerate(img[-150:]):
-                if black_row[1:5].mean() == 11822 \
-                        or black_row[1:50].mean() == 255 \
-                        or black_row[1:50].mean() == 46 \
-                        or black_row[1:50].mean() == 257 \
-                        or black_row[1:50].mean() == 0 \
-                        or black_row[1:50].mean() == 1:
+                # if black_row[1:5].mean() == 11822 \
+                #         or black_row[1:50].mean() == 255 \
+                #         or black_row[1:50].mean() == 46 \
+                #         or black_row[1:50].mean() == 257 \
+                #         or black_row[1:50].mean() == 0 \
+                #         or black_row[1:50].mean() == 1:
+                if black_row[1:5].mean() == black_row[1].mean():
                     # The real black row index is the index of the black row plus the index of the last 150 rows
                     black_row_index = index + img.shape[0] - 150
                     print(f'black row index: {black_row_index}')
@@ -214,23 +233,25 @@ def local_mode():
 
             scalebar = ScaleBar(length / magnification / x_pixel, 'mm',
                                 length_fraction=LENGTH_FRACTION,
+                                width_fraction=WIDTH_FRACTION,
                                 location=SCALEBAR_LOCATION,
                                 color='white',
                                 box_color='black',
                                 border_pad=0.5,
                                 sep=5,
                                 frameon=SHOW_FRAMEON,
-                                font_properties={'size': 'small'}) \
+                                font_properties={'size': FONT_SIZE}) \
                 if SIZE_OF_ONE_PIXEL == 0 \
                 else ScaleBar(SIZE_OF_ONE_PIXEL, 'nm',
                               length_fraction=LENGTH_FRACTION,
+                              width_fraction=WIDTH_FRACTION,
                               location=SCALEBAR_LOCATION,
                               color='white',
                               box_color='black',
                               border_pad=0.5,
                               sep=5,
                               frameon=SHOW_FRAMEON,
-                              font_properties={'size': 'small'})
+                              font_properties={'size': FONT_SIZE})
             plt.xticks([])
             plt.yticks([])
             plt.gca().add_artist(scalebar)

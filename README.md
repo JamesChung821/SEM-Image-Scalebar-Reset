@@ -1,7 +1,7 @@
 # SEM-Image-Scalebar-Reset
 ![logo](./Grok-sem-scalebar-reset-crop.jpg)
 
-This program assists in cropping the bottom information bar of the SEM image and generates a new scale bar.
+This program assists in cropping the bottom information bar of the SEM image and adds a new scale bar.
 
 ## Usage
 
