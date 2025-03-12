@@ -141,14 +141,17 @@ def streamlit_mode():
 
         width_fraction = st.sidebar.number_input('Scalebar width fraction, 0.03 is the default value', value=0.03)
         font_size = st.sidebar.selectbox('Font size', ('small', 'medium', 'large', 'x-large', 'xx-large'), index=2)
+        # white and black
+        scalebar_color = st.sidebar.selectbox('Scalebar color', ('white', 'black'), index=0)
+        box_color = 'black' if scalebar_color == 'white' else 'white'
 
         # Display the scalebar
         scalebar = ScaleBar(length / magnification / x_pixel, 'mm',
                             length_fraction=length_fraction,
                             width_fraction=width_fraction,
                             location=scalebar_location,
-                            color='white',
-                            box_color='black',
+                            color=scalebar_color,
+                            box_color=box_color,
                             border_pad=0.5,
                             sep=5,
                             frameon=hide_frameon,
@@ -158,8 +161,8 @@ def streamlit_mode():
                           length_fraction=length_fraction,
                           width_fraction=width_fraction,
                           location=scalebar_location,
-                          color='white',
-                          box_color='black',
+                          color=scalebar_color,
+                          box_color=box_color,
                           border_pad=0.5,
                           sep=5,
                           frameon=hide_frameon,
