@@ -97,10 +97,11 @@ def streamlit_mode():
             #         or black_row[1:50].mean() == 257 \
             #         or black_row[1:50].mean() == 0 \
             #         or black_row[1:50].mean() == 1:
-            if black_row[1:50].mean() == black_row[1].mean():
+            if black_row[1:50].mean() == black_row[1].mean() and black_row[1].mean() != 255:
                 # The real black row index is the index of the black row plus the index of the last 150 rows
                 black_row_index = index + img.shape[0] - 150
                 print('black row index', black_row_index)
+                print(f'black row: {black_row[1:50]}')
                 break
 
         # Crop the image and extract the text from the image at the bottom info bar
@@ -126,6 +127,8 @@ def streamlit_mode():
         original_image = ImageEnhance.Brightness(original_image).enhance(brightness)    # Enhance the brightness of the image
         contrast = st.sidebar.slider('Contrast, 1.00 is the default value', -10.0, 10.0, 1.0)
         original_image = ImageEnhance.Contrast(original_image).enhance(contrast)        # Enhance the contrast of the image
+        # sharpness = st.sidebar.slider('Sharpness, 1.00 is the default value', -10.0, 10.0, 1.0)
+        # original_image = ImageEnhance.Sharpness(original_image).enhance(sharpness)      # Enhance the sharpness of the image
         img = np.array(original_image)                                                  # Convert to numpy array to plot the image
 
         hide_frameon = not st.sidebar.checkbox("Hide frame around the scalebar")
@@ -218,11 +221,11 @@ def local_mode():
                 #         or black_row[1:50].mean() == 257 \
                 #         or black_row[1:50].mean() == 0 \
                 #         or black_row[1:50].mean() == 1:
-                if black_row[1:50].mean() == black_row[1].mean():
+                if black_row[1:50].mean() == black_row[1].mean() and black_row[1].mean() != 255:
                     # The real black row index is the index of the black row plus the index of the last 150 rows
                     black_row_index = index + img.shape[0] - 150
                     print(f'black row index: {black_row_index}')
-                    print(f'black row: {black_row}')
+                    print(f'black row: {black_row[1:50]}')
                     break
 
             text = pytesseract.image_to_string(img[black_row_index - 100:], config='--psm 6').replace('\n', ' ')
