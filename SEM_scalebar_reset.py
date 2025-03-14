@@ -97,11 +97,10 @@ def streamlit_mode():
             #         or black_row[1:50].mean() == 257 \
             #         or black_row[1:50].mean() == 0 \
             #         or black_row[1:50].mean() == 1:
-            if black_row[1:5].mean() == black_row[1].mean():
+            if black_row[1:50].mean() == black_row[1].mean():
                 # The real black row index is the index of the black row plus the index of the last 150 rows
                 black_row_index = index + img.shape[0] - 150
                 print('black row index', black_row_index)
-                print(f'black row: {black_row}')
                 break
 
         # Crop the image and extract the text from the image at the bottom info bar
@@ -131,9 +130,7 @@ def streamlit_mode():
 
         hide_frameon = not st.sidebar.checkbox("Hide frame around the scalebar")
 
-        length_fraction = st.sidebar.selectbox(
-            'Desired length of the scale bar as a fraction of the subplot\'s width',
-            (0.25, 0.5, 0.75, 1))
+        length_fraction = st.sidebar.selectbox('Scale bar length fraction', (0.25, 0.5, 0.75, 1))
 
         scalebar_location = st.sidebar.selectbox(
             'Scalebar Location',
@@ -221,7 +218,7 @@ def local_mode():
                 #         or black_row[1:50].mean() == 257 \
                 #         or black_row[1:50].mean() == 0 \
                 #         or black_row[1:50].mean() == 1:
-                if black_row[1:5].mean() == black_row[1].mean():
+                if black_row[1:50].mean() == black_row[1].mean():
                     # The real black row index is the index of the black row plus the index of the last 150 rows
                     black_row_index = index + img.shape[0] - 150
                     print(f'black row index: {black_row_index}')
