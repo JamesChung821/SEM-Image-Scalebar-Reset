@@ -12,7 +12,6 @@ import streamlit as st
 import io
 import time
 
-from wx.py.PyCrust import original
 
 MODE = 'streamlit'  # 'streamlit' or 'local'
 INPUT_PATH = r"C:\Users\user\Downloads\G5 Scalebar update"
@@ -103,7 +102,7 @@ def streamlit_mode():
                 # The real black row index is the index of the black row plus the index of the last 150 rows
                 black_row_index = index + img.shape[0] - 150
                 print('black row index', black_row_index)
-                print(f'black row: {black_row[1:50]}')
+                print(f'black row: {black_row[1:5]}')
                 break
 
         # Crop the image and extract the text from the image at the bottom info bar
@@ -112,8 +111,9 @@ def streamlit_mode():
         print(f'Text: {text}')
 
         # Search the magnification from the text
+        magnification = 0
         if size_of_one_pixel == 0:
-            magnification = 0
+            # magnification = 0
             try:
                 magnification = search_magnification(sem_manufacturer, text)
             except ValueError:
