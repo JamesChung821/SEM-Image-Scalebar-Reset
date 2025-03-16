@@ -12,6 +12,8 @@ import streamlit as st
 import io
 import time
 
+from wx.py.PyCrust import original
+
 MODE = 'streamlit'  # 'streamlit' or 'local'
 INPUT_PATH = r"C:\Users\user\Downloads\G5 Scalebar update"
 # INPUT_PATH = r"D:\Research data\SSID\202305\20230524 G5 NbAlSc EDX"
@@ -106,7 +108,7 @@ def streamlit_mode():
 
         # Crop the image and extract the text from the image at the bottom info bar
         text = pytesseract.image_to_string(
-            img[black_row_index - 150:], config='--psm 6').replace('\n', ' ')   # --psm 11 may be better
+            img[black_row_index - 100:], config='--psm 6').replace('\n', ' ')   # --psm 11 may be better
         print(f'Text: {text}')
 
         # Search the magnification from the text
@@ -123,13 +125,26 @@ def streamlit_mode():
         print(f'original_image.mode: {original_image.mode}')
         if original_image.mode not in ["RGB", "L"]:
             original_image = original_image.convert("L")
-        brightness = st.sidebar.slider('Brightness, 1.00 is the default value', 0.0, 2.0, 1.0)
-        original_image = ImageEnhance.Brightness(original_image).enhance(brightness)    # Enhance the brightness of the image
-        contrast = st.sidebar.slider('Contrast, 1.00 is the default value', -10.0, 10.0, 1.0)
-        original_image = ImageEnhance.Contrast(original_image).enhance(contrast)        # Enhance the contrast of the image
         # sharpness = st.sidebar.slider('Sharpness, 1.00 is the default value', -10.0, 10.0, 1.0)
         # original_image = ImageEnhance.Sharpness(original_image).enhance(sharpness)      # Enhance the sharpness of the image
-        img = np.array(original_image)                                                  # Convert to numpy array to plot the image
+        # brightness = st.sidebar.slider('Brightness, 1.00 is the default value', 0.0, 3.0, 1.0)
+        # original_image = ImageEnhance.Brightness(original_image).enhance(brightness)    # Enhance the brightness of the image
+        # contrast = st.sidebar.slider('Contrast, 1.00 is the default value', -10.0, 10.0, 1.0)
+        # original_image = ImageEnhance.Contrast(original_image).enhance(contrast)        # Enhance the contrast of the image
+        # img = np.array(original_image)
+
+        # Add this to your streamlit_mode function
+        auto_adjust = st.sidebar.checkbox("Auto adjust brightness and contrast")
+
+        # Replace your brightness and contrast sliders with conditional ones
+        if auto_adjust:
+            original_image = auto_adjust_brightness_contrast(original_image)
+        else:
+            brightness = st.sidebar.slider('Brightness', 0.0, 3.0, 1.0)
+            original_image = ImageEnhance.Brightness(original_image).enhance(brightness)
+            contrast = st.sidebar.slider('Contrast', 0.0, 3.0, 1.0)
+            original_image = ImageEnhance.Contrast(original_image).enhance(contrast)# Convert to numpy array to plot the image
+        img = np.array(original_image)
 
         hide_frameon = not st.sidebar.checkbox("Hide frame around the scalebar")
 
@@ -140,7 +155,7 @@ def streamlit_mode():
             ('lower right', 'lower left', 'upper right', 'upper left'))
 
         width_fraction = st.sidebar.number_input('Scalebar width fraction, 0.03 is the default value', value=0.03)
-        font_size = st.sidebar.selectbox('Font size', ('small', 'medium', 'large', 'x-large', 'xx-large'), index=2)
+        font_size = st.sidebar.selectbox('Font size', ('small', 'medium', 'large', 'x-large', 'xx-large'), index=3)
         # white and black
         scalebar_color = st.sidebar.selectbox('Scalebar color', ('white', 'black'), index=0)
         box_color = 'black' if scalebar_color == 'white' else 'white'
@@ -311,6 +326,48 @@ def search_magnification(sem_manufacturer, text):
         print(f'magnification: {magnification}')
         return magnification
 
+
+def auto_adjust_brightness_contrast(image):
+    """
+    Automatically adjust brightness and contrast of an image
+    using histogram equalization
+    """
+    # Convert PIL image to numpy array
+    img_array = np.array(image)
+
+    # Check if grayscale or convert to grayscale
+    if len(img_array.shape) == 3 and img_array.shape[2] == 3:
+        gray_img = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
+    else:
+        gray_img = img_array
+
+    # Get statistics of original image
+    orig_mean = np.mean(gray_img)
+    orig_std = np.std(gray_img)
+
+    # Apply CLAHE (Contrast Limited Adaptive Histogram Equalization)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    adjusted = clahe.apply(gray_img.astype(np.uint8))
+
+    # Calculate effective brightness and contrast
+    adjusted_mean = np.mean(adjusted)
+    adjusted_std = np.std(adjusted)
+
+    # Approximate brightness and contrast factors
+    effective_brightness = adjusted_mean / orig_mean if orig_mean > 0 else 1.0
+    effective_contrast = adjusted_std / orig_std if orig_std > 0 else 1.0
+
+    st.sidebar.info(f"Auto adjustment applied with approximate values:"
+                    f"\n- Brightness: {effective_brightness:.2f}"
+                    f"\n- Contrast: {effective_contrast:.2f}")
+
+    # Histogram equalization is a little too strong, so we'll tone it down a bit
+    original_image = ImageEnhance.Brightness(image).enhance(effective_brightness)    # Enhance the brightness of the image
+    original_image = ImageEnhance.Contrast(original_image).enhance(effective_contrast)        # Enhance the contrast of the image
+
+    # Convert back to PIL image
+    # return Image.fromarray(adjusted)
+    return original_image
 
 if __name__ == '__main__':
     main()
