@@ -108,7 +108,7 @@ def streamlit_mode():
         # Crop the image and extract the text from the image at the bottom info bar
         print('='*50)
         text = pytesseract.image_to_string(
-            img[black_row_index - 0:], config='--psm 6').replace('\n', ' ')   # --psm 11 may be better
+            img[black_row_index + (img.shape[0]-black_row_index)//2 - 2:], config='--psm 6').replace('\n', ' ')   # --psm 11 may be better
         print(f'Text: {text}')
         print('='*50)
 
