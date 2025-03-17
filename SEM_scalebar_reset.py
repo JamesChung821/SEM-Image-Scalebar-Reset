@@ -106,9 +106,11 @@ def streamlit_mode():
                 break
 
         # Crop the image and extract the text from the image at the bottom info bar
+        print('='*50)
         text = pytesseract.image_to_string(
-            img[black_row_index - 100:, img.shape[1]//4:], config='--psm 6').replace('\n', ' ')   # --psm 11 may be better
+            img[black_row_index - 0:], config='--psm 6').replace('\n', ' ')   # --psm 11 may be better
         print(f'Text: {text}')
+        print('='*50)
 
         # Search the magnification from the text
         magnification = 0
@@ -243,7 +245,7 @@ def local_mode():
                     print(f'black row: {black_row[1:50]}')
                     break
 
-            text = pytesseract.image_to_string(img[black_row_index - 100:, img.shape[1]//4:], config='--psm 6').replace('\n', ' ')
+            text = pytesseract.image_to_string(img[black_row_index - 100:], config='--psm 6').replace('\n', ' ')
             print(f'Text: {text}')
 
             # Search the magnification from the text
