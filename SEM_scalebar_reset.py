@@ -88,7 +88,7 @@ def streamlit_mode():
 
         black_row_index = img.shape[0]  # Initialize the black row index
 
-        print(img[black_row_index - 10, :])  # Check the last 10 rows (pixels) of the image
+        print(img[black_row_index - 20, :])  # Check the last 10 rows (pixels) of the image
         # Because the bar info is at the bottom of the image,
         # we find the first row of bar info from index = -150 to the end to crop the image
         for index, black_row in enumerate(img[-150:]):
@@ -98,11 +98,12 @@ def streamlit_mode():
             #         or black_row[1:50].mean() == 257 \
             #         or black_row[1:50].mean() == 0 \
             #         or black_row[1:50].mean() == 1:
-            if black_row[1:50].mean() == black_row[1].mean() and black_row[1].mean() != 255:
+            if black_row[1:50].mean() == black_row[1:10].mean() and black_row[1].mean() != 255:
                 # The real black row index is the index of the black row plus the index of the last 150 rows
                 black_row_index = index + img.shape[0] - 150
                 print('black row index', black_row_index)
                 print(f'black row: {black_row[1:5]}')
+                print(black_row[1:50].mean())
                 break
 
         # Crop the image and extract the text from the image at the bottom info bar
@@ -291,7 +292,7 @@ def search_magnification(sem_manufacturer, text):
     """
     if sem_manufacturer == 'Helios':
         magnification_head = 0
-        magnification_tail = text.find('x') - 1
+        magnification_tail = text.rfind('x') - 1    # Find the magnification tail from the last 'x'
         for index in range(magnification_tail, 0, -1):  # Find the magnification head
             if not text[index].isdigit() and text[index] != ' ':
                 magnification_head = index + 1
